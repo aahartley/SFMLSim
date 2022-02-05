@@ -54,7 +54,7 @@ void Sim::draw() {
     p2.circle = circle2;
 
     sf::CircleShape test{ 5.0f };
-    circle.setPosition(sf::Vector2f{0,10});
+    test.setPosition(sf::Vector2f{100,100});
 
     float x = 300.f;
     float y = 200.0f;
@@ -64,18 +64,22 @@ void Sim::draw() {
     for (float i = 0; i < numOfP; ++i) {
         Particle* tmp=  new Particle{ sf::Vector2f{x ,y},30.0f};
         sf::CircleShape circle { 5.0f };
+        if (x >= 680) {
+            x = 300;
+            y += 20;
+            if (y >= 690)
+                break;
+        }
+        else {
+            x += 12;
+
+        }
         circle.setPosition(tmp->coord);
         tmp->circle = circle;
-        if (x >= 700) {
-            x = 0;
-            ++y;
-        }
-        else
-            x += 11;
        buffer.push_back(tmp);
     }
     for (Particle* p : buffer) {
-        int force = 10.0f * p->getMass();
+        float force = 10.0f * p->getMass();
         switch (d) {
         case(Direction::up): {
             p->acceleration.y -= force / p->getMass();
@@ -138,31 +142,34 @@ void Sim::draw() {
                 window->close();
             if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
             {
-                for (Particle* p : buffer) {
-                    p->acceleration.y *= -1.0f;
-                }
+                #pragma omp parallel for num_threads(2)
+                for (int i = 0; i < buffer.size(); i++) {
+                    buffer[i]->acceleration.y *= -1.0f;
+                    }
+                
                 
             }
             if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
             {
-                for (Particle* p : buffer) {
-                    if(p->acceleration.x==0)
-                        p->acceleration.x = 1.0f;
+                #pragma omp parallel for num_threads(2)
+                for (int i = 0; i < buffer.size(); i++) {
+                    if(buffer[i]->acceleration.x == 0)
+                        buffer[i]->acceleration.x = 1.0f;
                     else
-                        p->acceleration.x *= -1.0f;
+                        buffer[i]->acceleration.x *= -1.0f;
                 }
 
             }
         }
-
-        for (Particle* p : buffer) {
-            p->calculation(dt, buffer);
+        #pragma omp parallel for num_threads(5) schedule(static)
+        for (int i = 0; i < buffer.size();i++) {
+            buffer[i]->calculation(dt, buffer);
         }
         window->clear();
-        for (Particle* p : buffer) {
-            window->draw(p->circle);
+        for (int i = 0; i < buffer.size(); i++) {
+            window->draw(buffer[i]->circle);
         }
- 
+       // window->draw(test);
         window->draw(line,2,sf::Lines);
         window->draw(line2, 2, sf::Lines);
         window->draw(line3, 2, sf::Lines);
