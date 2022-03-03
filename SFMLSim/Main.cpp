@@ -7,7 +7,10 @@ double step;
 
 int main() {
 	Sim sim;
-	sim.draw();
+	sim.draw2();
+	//Matrix mat(300, 200, 1);
+	//mat.multiply();
+	//sim.draw();
 /*	double start1 = omp_get_wtime();
 	double pi, sum = 0.0;
 	int numOft;

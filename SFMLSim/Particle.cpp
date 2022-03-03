@@ -34,10 +34,35 @@ void Particle::forces(float dt) {
 }
 void Particle::calculation(float dt,std::vector<Particle*>& buffer) {
 	forces(dt);
-	collisionDetection(dt, buffer);
+	//collisionDetection(dt, buffer);
+	Path(dt, buffer);
 	draw(dt);
 	circle.setPosition(coord);
 	
+}
+void Particle::Path(float dt, std::vector<Particle*>& buffer) {
+	//Matrix m{};
+	//m.setData(buffer);
+	//floor
+	if (coord.y >= 700 - circle.getRadius() * 2) {
+		velocity.y *= -elasticity;
+	}
+	//top
+	if (coord.y <= 100) {
+
+		velocity.y *= -elasticity;
+	}
+	//right
+	if (coord.x >= 700 - circle.getRadius() * 2) {
+
+		velocity.x *= -elasticity;
+	}
+	//left
+	if (coord.x <= 100) {
+
+		velocity.x *= -elasticity;
+	}
+
 }
 sf::Vector2f Particle::rotate(sf::Vector2f& vel, float angle) {
 	return sf::Vector2f{ vel.x * std::cos(angle) - vel.y * std::sin(angle),vel.x * std::sin(angle) + vel.y * std::cos(angle) };
